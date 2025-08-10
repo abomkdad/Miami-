@@ -110,12 +110,21 @@
     /* Bottom sheet */
     .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:saturate(120%) blur(2px);display:grid;place-items:end center;z-index:10050;transition:opacity .25s ease}
     .sheet-backdrop[hidden]{display:none}
-    .sheet{width:100%;max-width:640px;background:#0f0f0f;border-top-left-radius:16px;border-top-right-radius:16px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(100%);animation:sheetIn .25s ease forwards}
-    .sheet-handle{width:44px;height:4px;border-radius:4px;background:rgba(255,255,255,.25);margin:0 auto 10px}
-    .sheet-title{text-align:center;margin:0 0 10px;font-size:16px}
+    .sheet{width:100%;max-width:640px;background:#0f0f0f;border-top-left-radius:20px;border-top-right-radius:20px;padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -14px 34px rgba(0,0,0,.5);transform:translateY(100%);animation:sheetIn .25s ease forwards}
+    .sheet-handle{width:56px;height:5px;border-radius:6px;background:rgba(255,255,255,.25);margin:0 auto 12px}
+    .sheet-title{text-align:center;margin:0 0 12px;font-size:18px;font-weight:800}
+    .pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 6px}
+    .pay-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;font-weight:800;text-decoration:none;color:#fff;border:1px solid rgba(255,255,255,.15)}
+    .pay-opt:hover{filter:brightness(1.05)}
+    .pay-opt:active{transform:translateY(1px)}
+    .pay-opt.pay-bit{background:#0ea5e9}
+    .pay-opt.pay-visa{background:#1a73e8}
+    .pay-opt.pay-apple{background:#111;border-color:#333}
+    .pay-opt.pay-google{background:#1a73e8}
     .btn-large{height:54px;font-size:14px}
     .sheet-close{margin:10px auto 0;display:block;background:#1e1e1e;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:10px;height:40px;padding:0 14px}
     @keyframes sheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    body.no-scroll{overflow:hidden}
     .btn-call{background:#1e1e1e;color:#fff;border:1px solid rgba(255,255,255,.15)}
     .btn-order{background:#22c55e;color:#fff}
     .payment-icons{display:flex;gap:3px;margin-top:0;justify-content:center;flex-wrap:nowrap;opacity:.95}
@@ -213,18 +222,12 @@
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
       <div class="sheet-handle" aria-hidden="true"></div>
       <h3 class="sheet-title" id="sheetTitle">الدفع الآن</h3>
-      <a href="https://meshulam.co.il/purchase?b=d57ad099c6dbffe88767d600ba9789e8" target="_blank" rel="noopener" class="btn btn-pay btn-large" id="btnPaySheet" onclick="trackAllPurchases(100)">
-        <div class="pay-line">
-          <svg class="icon icon-house" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M9 22V12h6v10"/></svg>
-          <span>ادفع الآن</span>
-        </div>
-        <div class="payment-icons">
-          <span class="badge">Google Pay</span>
-          <span class="badge">Apple Pay</span>
-          <span class="badge">VISA</span>
-          <span class="badge">Bit</span>
-        </div>
-      </a>
+      <div class="pay-grid">
+        <a href="https://meshulam.co.il/purchase?b=d57ad099c6dbffe88767d600ba9789e8" target="_blank" rel="noopener" class="pay-opt pay-bit" onclick="trackAllPurchases(100)" aria-label="Bit">Bit</a>
+        <a href="https://meshulam.co.il/purchase?b=d57ad099c6dbffe88767d600ba9789e8" target="_blank" rel="noopener" class="pay-opt pay-visa" onclick="trackAllPurchases(100)" aria-label="VISA">VISA</a>
+        <a href="https://meshulam.co.il/purchase?b=d57ad099c6dbffe88767d600ba9789e8" target="_blank" rel="noopener" class="pay-opt pay-apple" onclick="trackAllPurchases(100)" aria-label="Apple Pay">Apple Pay</a>
+        <a href="https://meshulam.co.il/purchase?b=d57ad099c6dbffe88767d600ba9789e8" target="_blank" rel="noopener" class="pay-opt pay-google" onclick="trackAllPurchases(100)" aria-label="Google Pay">Google Pay</a>
+      </div>
       <button class="sheet-close" type="button" onclick="closePaySheet()">إغلاق</button>
     </div>
   </div>
@@ -277,9 +280,27 @@
       try{ snaptr('track','LEAD'); }catch(e){}
     }
     function onCallClick(){ trackAllLeads(); }
+    function setPaySheetLang(){
+      var lang = navigator.language || navigator.userLanguage || 'ar';
+      var sh = document.getElementById('sheetTitle');
+      var psLbl = document.querySelector('#btnPaySheet .pay-line span');
+      var closeBtn = document.querySelector('.sheet-close');
+      if(lang.includes('he')){
+        if(sh) sh.innerText='שלם עכשיו';
+        if(psLbl) psLbl.innerText='שלם עכשיו';
+        if(closeBtn) closeBtn.innerText='סגור';
+        var mini=document.getElementById('miniPayLabel'); if(mini) mini.innerText='שלם';
+      }else{
+        if(sh) sh.innerText='الدفع الآن';
+        if(psLbl) psLbl.innerText='ادفع الآن';
+        if(closeBtn) closeBtn.innerText='إغلاق';
+        var mini2=document.getElementById('miniPayLabel'); if(mini2) mini2.innerText='ادفع';
+      }
+    }
     function onOrderClick(){ trackAllLeads(); scrollToOrder(); }
-    function openPaySheet(){ document.getElementById('paySheet').hidden=false; trackAllLeads(); }
-    function closePaySheet(){ document.getElementById('paySheet').hidden=true; }
+    function openPaySheet(){ setPaySheetLang(); document.getElementById('paySheet').hidden=false; document.body.classList.add('no-scroll'); trackAllLeads(); }
+    function closePaySheet(){ document.getElementById('paySheet').hidden=true; document.body.classList.remove('no-scroll'); }
+    window.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closePaySheet(); }});
 
     // Purchase tracking for pay button
     function trackAllPurchases(priceILS){
@@ -336,6 +357,9 @@
         var pb=document.querySelector('.progress-bar'); if(pb) pb.innerText='נשאר שלב אחד להשלמת ההזמנה';
         var sa=document.getElementById('stockAlert'); if(sa) sa.innerText='⏳ נותרו רק 5 לקוחות שיכולים להזמין את ההצעה לפני סיומה!';
         var miniLbl=document.getElementById('miniPayLabel'); if(miniLbl) miniLbl.innerText='שלם';
+        var sh=document.getElementById('sheetTitle'); if(sh) sh.innerText='שלם עכשיו';
+        var psLbl=document.querySelector('#btnPaySheet .pay-line span'); if(psLbl) psLbl.innerText='שלם עכשיו';
+        var cls=document.querySelector('.sheet-close'); if(cls) cls.innerText='סגור';
         var fab=document.getElementById('fabCall'); if(fab) fab.setAttribute('aria-label','שיחה');
         var ord=document.getElementById('orderText'); if(ord) ord.innerText='הזמן עכשיו – תשלום במעמד המסירה';
         var ordBtn=document.getElementById('btnOrderBottom'); if(ordBtn) ordBtn.setAttribute('aria-label','הזמן עכשיו – תשלום במעמד המסירה');
@@ -344,6 +368,9 @@
       }else{
         var payBtn2=document.getElementById('btnPayTrigger'); if(payBtn2) payBtn2.setAttribute('aria-label','ادفع الآن');
         var paySheetBtn2=document.getElementById('btnPaySheet'); if(paySheetBtn2) paySheetBtn2.setAttribute('aria-label','ادفع الآن');
+        var sh2=document.getElementById('sheetTitle'); if(sh2) sh2.innerText='الدفع الآن';
+        var psLbl2=document.querySelector('#btnPaySheet .pay-line span'); if(psLbl2) psLbl2.innerText='ادفع الآن';
+        var cls2=document.querySelector('.sheet-close'); if(cls2) cls2.innerText='إغلاق';
         var fabAr=document.getElementById('fabCall'); if(fabAr) fabAr.setAttribute('aria-label','اتصال');
         var ord2=document.getElementById('orderText'); if(ord2) ord2.innerText='اطلب الآن – الدفع عند الاستلام';
         var ordBtn2=document.getElementById('btnOrderBottom'); if(ordBtn2) ordBtn2.setAttribute('aria-label','اطلب الآن – الدفع عند الاستلام');
